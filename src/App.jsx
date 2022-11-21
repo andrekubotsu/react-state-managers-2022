@@ -1,50 +1,42 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 
-function NameList() {
-  const [list, setList] = useState(["Jack", "Jill", "John"]);
-  const [name, setName] = useState(() => "Andre");
+function SortedList({ list, sortFunction }) {
+  console.log("Running render");
 
-  const onAddName = () => {
-    setList([...list, name]);
-    setName("");
-  };
+  const sortedList = useMemo(() => {
+    console.log("Running sort");
+    return [...list].sort(sortFunction);
+  }, [list, sortFunction]);
 
-  return (
-    <>
-      <ul>
-        {list.map((name) => (
-          <li key={name}>{name}</li>
-        ))}
-      </ul>
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button onClick={onAddName}>Add Name</button>
-    </>
-  );
-}
-
-function Count() {
-  const [count, setCount] = useState(10);
-
-  function addOne() {
-    setCount(count + 1);
-  }
-
-  return (
-    <div className="App">
-      <button onClick={addOne}>Count = {count}</button>
-    </div>
-  );
+  return <div>{sortedList.join(", ")}</div>;
 }
 
 function App() {
+  const [numbers] = useState([10, 20, 30]);
+
+  const total = useMemo(
+    () => numbers.reduce((acc, number) => acc + number, 0),
+    [numbers]
+  );
+
+  const [names] = useState(["John", "Paul", "George", "Ringo"]);
+
+  const [count1, setCount1] = useState(0);
+  const [count2, setCount2] = useState(0);
+
+  const countTotal = useMemo(() => count1 + count2, [count1, count2]);
+
+  // we use useCallback when the function is being passaed as a prop!
+  const sortFunction = useCallback((a, b) => a.localeCompare(b), []);
+
   return (
     <>
-      <Count />
-      <NameList />
+      <div>Total: {total}</div>
+      <div>Names: {names.join(", ")}</div>
+      <SortedList list={names} sortFunction={sortFunction} />
+      <button onClick={() => setCount1(count1 + 1)}>Count 1: {count1}</button>
+      <button onClick={() => setCount2(count2 + 1)}>Count 2: {count2}</button>
+      <div>Total: {countTotal}</div>
     </>
   );
 }
