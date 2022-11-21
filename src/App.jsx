@@ -1,51 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-function NameList() {
-  const [list, setList] = useState(["Jack", "Jill", "John"]);
-  const [name, setName] = useState(() => "Andre");
+const Stopwatch = () => {
+  const [time, setTime] = useState(0);
 
-  const onAddName = () => {
-    setList([...list, name]);
-    setName("");
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime((t) => {
+        return t + 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return <div>Time: {time}</div>;
+};
+
+function App() {
+  const [names, setNames] = useState([]);
+
+  // for api requests
+  useEffect(() => {
+    fetch("/names.json")
+      .then((response) => response.json())
+      .then((data) => setNames(data));
+  }, []);
+
+  const [selectedNameDetails, setSelectedNameDetails] = useState(null);
+
+  const onSelectedName = (name) => {
+    fetch(`/${name}.json`)
+      .then((response) => response.json())
+      .then((data) => setSelectedNameDetails(data));
   };
 
   return (
-    <>
-      <ul>
-        {list.map((name) => (
-          <li key={name}>{name}</li>
-        ))}
-      </ul>
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button onClick={onAddName}>Add Name</button>
-    </>
-  );
-}
-
-function Count() {
-  const [count, setCount] = useState(10);
-
-  function addOne() {
-    setCount(count + 1);
-  }
-
-  return (
-    <div className="App">
-      <button onClick={addOne}>Count = {count}</button>
+    <div>
+      <Stopwatch />
+      <div>
+        {names.map((name) => {
+          return (
+            <button
+              onClick={() => {
+                onSelectedName(name);
+              }}
+            >
+              {name}
+            </button>
+          );
+        })}
+      </div>
+      <div>{JSON.stringify(selectedNameDetails)}</div>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <>
-      <Count />
-      <NameList />
-    </>
   );
 }
 
